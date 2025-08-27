@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app" class="app-root">
+        <aside class="sidebar">
+            <div class="brand">Flip Tracker</div>
+            <nav class="nav">
+                <button class="nav-btn" data-view="dashboard">Dashboard</button>
+                <button class="nav-btn" data-view="inventory">Inventar</button>
+                <button class="nav-btn" data-view="builds">Builds</button>
+                <button class="nav-btn" data-view="bundles">Bundles</button>
+                <button class="nav-btn" data-view="trash">Mülleimer</button>
+                <button class="nav-btn" data-view="settings">Einstellungen</button>
+            </nav>
+            <div class="account-area">
+                <div id="user-info" class="user-info">Nicht angemeldet</div>
+                <button id="login-btn" class="primary">Login</button>
+                <button id="logout-btn" class="ghost" hidden>Logout</button>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header class="toolbar">
+                <div class="toolbar-left">
+                    <input id="global-search" type="search" placeholder="Suche..." />
+                </div>
+                <div class="toolbar-right">
+                    <button id="add-item" class="primary" data-open-modal="item-modal">+ Teil</button>
+                    <button id="add-build" class="ghost" data-open-modal="build-modal">+ Build</button>
+                    <button id="add-bundle" class="ghost" data-open-modal="bundle-modal">+ Bundle</button>
+                </div>
+            </header>
+
+            <section id="view-dashboard" class="view active">
+                <h1>Dashboard</h1>
+                <div class="kpis">
+                    <div class="kpi"><div class="kpi-label">Gesamtkapital</div><div id="kpi-capital" class="kpi-value">–</div></div>
+                    <div class="kpi"><div class="kpi-label">Realisierter P/L</div><div id="kpi-realized" class="kpi-value">–</div></div>
+                    <div class="kpi"><div class="kpi-label">Inventarwert</div><div id="kpi-inventory" class="kpi-value">–</div></div>
+                    <div class="kpi"><div class="kpi-label">Offene Listings</div><div id="kpi-open-listings" class="kpi-value">–</div></div>
+                </div>
+                <div class="panel">
+                    <h2>Zuletzt hinzugefügt</h2>
+                    <div id="recent-items" class="cards"></div>
+                </div>
+            </section>
+
+            <section id="view-inventory" class="view">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h1>Inventar</h1>
+                        <div class="filters">
+                            <select id="filter-category">
+                                <option value="">Alle Kategorien</option>
+                                <option>CPU</option>
+                                <option>GPU</option>
+                                <option>RAM</option>
+                                <option>Mainboard</option>
+                                <option>Netzteil</option>
+                                <option>Case</option>
+                                <option>Kühler</option>
+                            </select>
+                            <select id="filter-condition">
+                                <option value="">Alle Zustände</option>
+                                <option>Neu</option>
+                                <option>Wie neu</option>
+                                <option>Gebraucht</option>
+                                <option>Defekt</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="inventory-list" class="table"></div>
+                </div>
+            </section>
+
+            <section id="view-builds" class="view">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h1>Builds</h1>
+                    </div>
+                    <div id="builds-list" class="table"></div>
+                </div>
+            </section>
+
+            <section id="view-bundles" class="view">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h1>Bundles</h1>
+                    </div>
+                    <div id="bundles-list" class="table"></div>
+                </div>
+            </section>
+
+            <section id="view-trash" class="view">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h1>Mülleimer</h1>
+                    </div>
+                    <div id="trash-list" class="table"></div>
+                </div>
+            </section>
+
+            <section id="view-settings" class="view">
+                <div class="panel">
+                    <h1>Einstellungen</h1>
+                    <div class="settings-grid">
+                        <div>
+                            <label for="settings-currency">Währung</label>
+                            <select id="settings-currency">
+                                <option value="EUR">EUR €</option>
+                                <option value="USD">USD $</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="settings-print-prices">Preise in Druckansicht anzeigen</label>
+                            <input type="checkbox" id="settings-print-prices" checked>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Item Modal -->
+    <dialog id="item-modal" class="modal">
+        <form method="dialog" id="item-form" class="form">
+            <header>
+                <h3 id="item-form-title">Teil hinzufügen</h3>
+                <button type="button" class="icon-btn" data-close>×</button>
+            </header>
+            <div class="grid-2">
+                <div>
+                    <label>Kategorie</label>
+                    <select name="category" required>
+                        <option value="">Bitte wählen</option>
+                        <option>CPU</option>
+                        <option>GPU</option>
+                        <option>RAM</option>
+                        <option>Mainboard</option>
+                        <option>Netzteil</option>
+                        <option>Case</option>
+                        <option>Kühler</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Marke</label>
+                    <select name="brand">
+                        <option value="">—</option>
+                        <option>AMD</option>
+                        <option>Intel</option>
+                        <option>Gigabyte</option>
+                        <option>MSI</option>
+                        <option>ASUS</option>
+                        <option>Corsair</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Modell</label>
+                    <input name="model" placeholder="z. B. Ryzen 5 5600" />
+                </div>
+                <div>
+                    <label>Kaufdatum</label>
+                    <input type="date" name="purchaseDate" />
+                </div>
+                <div>
+                    <label>Zahlungsplattform</label>
+                    <select name="paymentPlatform">
+                        <option value="">—</option>
+                        <option>PayPal</option>
+                        <option>Kleinanzeigen</option>
+                        <option>Banküberweisung</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Zustand</label>
+                    <select name="condition">
+                        <option value="">—</option>
+                        <option>Neu</option>
+                        <option>Wie neu</option>
+                        <option>Gebraucht</option>
+                        <option>Defekt</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Tags</label>
+                    <input name="tags" placeholder="Kommagetrennt: CPU, Gaming" />
+                </div>
+                <div>
+                    <label>Kaufpreis (€)</label>
+                    <input type="number" step="0.01" name="purchasePrice" />
+                </div>
+            </div>
+
+            <fieldset class="specs" id="specs-fields">
+                <legend>Spezifikationen</legend>
+                <div class="specs-container"></div>
+            </fieldset>
+
+            <fieldset class="sale-fields">
+                <legend>Verkauf (optional)</legend>
+                <div class="grid-2">
+                    <div>
+                        <label>Verkaufsdatum</label>
+                        <input type="date" name="saleDate" />
+                    </div>
+                    <div>
+                        <label>Plattform</label>
+                        <select name="salePlatform">
+                            <option value="">—</option>
+                            <option>eBay</option>
+                            <option>Kleinanzeigen</option>
+                            <option>Facebook</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Versand</label>
+                        <select name="shipped">
+                            <option value="">—</option>
+                            <option>Ja</option>
+                            <option>Nein</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Wunschpreis (€)</label>
+                        <input type="number" step="0.01" name="askPrice" />
+                    </div>
+                    <div>
+                        <label>Verkaufspreis (€)</label>
+                        <input type="number" step="0.01" name="salePrice" />
+                    </div>
+                </div>
+            </fieldset>
+
+            <footer class="actions">
+                <button type="submit" class="primary">Speichern</button>
+                <button type="button" class="ghost" data-close>Abbrechen</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <!-- Build Modal -->
+    <dialog id="build-modal" class="modal">
+        <form method="dialog" id="build-form" class="form">
+            <header>
+                <h3 id="build-form-title">Build anlegen</h3>
+                <button type="button" class="icon-btn" data-close>×</button>
+            </header>
+            <div>
+                <label>Name</label>
+                <input name="name" placeholder="Build-Name" />
+            </div>
+            <div>
+                <label>Teile auswählen</label>
+                <div id="build-inventory-picker" class="picker"></div>
+            </div>
+            <fieldset class="sale-fields">
+                <legend>Verkauf (optional)</legend>
+                <div class="grid-2">
+                    <div>
+                        <label>Verkaufsdatum</label>
+                        <input type="date" name="saleDate" />
+                    </div>
+                    <div>
+                        <label>Plattform</label>
+                        <select name="salePlatform">
+                            <option value="">—</option>
+                            <option>eBay</option>
+                            <option>Kleinanzeigen</option>
+                            <option>Facebook</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Versand</label>
+                        <select name="shipped">
+                            <option value="">—</option>
+                            <option>Ja</option>
+                            <option>Nein</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Wunschpreis (€)</label>
+                        <input type="number" step="0.01" name="askPrice" />
+                    </div>
+                    <div>
+                        <label>Verkaufspreis (€)</label>
+                        <input type="number" step="0.01" name="salePrice" />
+                    </div>
+                </div>
+            </fieldset>
+            <footer class="actions">
+                <button type="submit" class="primary">Speichern</button>
+                <button type="button" class="ghost" data-close>Abbrechen</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <!-- Bundle Modal -->
+    <dialog id="bundle-modal" class="modal">
+        <form method="dialog" id="bundle-form" class="form">
+            <header>
+                <h3 id="bundle-form-title">Bundle anlegen</h3>
+                <button type="button" class="icon-btn" data-close>×</button>
+            </header>
+            <div>
+                <label>Bundle-Name</label>
+                <input name="name" placeholder="z. B. Gaming-Bundle" />
+            </div>
+            <div class="bundle-items">
+                <div class="bundle-items-header">
+                    <span>Teile im Bundle</span>
+                    <button type="button" class="ghost" id="add-bundle-item">+ Teil</button>
+                </div>
+                <div id="bundle-items-container"></div>
+            </div>
+            <div class="grid-2">
+                <div>
+                    <label>Gesamtpreis (€)</label>
+                    <input type="number" step="0.01" name="totalPrice" />
+                </div>
+                <div>
+                    <label>Verteilung</label>
+                    <select name="distribution">
+                        <option value="even">Gleichmäßig</option>
+                        <option value="weighted">Gewichtet</option>
+                    </select>
+                </div>
+            </div>
+            <footer class="actions">
+                <button type="submit" class="primary">Speichern</button>
+                <button type="button" class="ghost" data-close>Abbrechen</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <script src="script.js" type="module"></script>
+    <!-- Firebase SDKs werden dynamisch in script.js geladen -->
+</body>
+</html>
+
